@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tmux Bindings for Vim Users</title>
+    <style>
+        :root {
+            --bg-primary: #1a1b26;
+            --bg-secondary: #24283b;
+            --bg-tertiary: #2f3549;
+            --text-primary: #a9b1d6;
+            --text-secondary: #7aa2f7;
+            --accent: #bb9af7;
+            --green: #9ece6a;
+            --yellow: #e0af68;
+            --red: #f7768e;
+            --border: #414868;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            font-size: 1.8em;
+            margin-right: 15px;
+        }
+
+        .section-title {
+            color: var(--text-secondary);
+            font-size: 1.4em;
+        }
+
+        .binding-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .binding-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .binding-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .binding-card.highlight:hover {
+            box-shadow: 0 6px 12px rgba(187, 154, 247, 0.4);
+        }
+
+        .key {
+            display: inline-block;
+            background: var(--bg-primary);
+            color: var(--green);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: 2px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .binding-card.highlight .key {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .action {
+            color: var(--text-primary);
+            font-size: 0.95em;
+        }
+
+        .vim-equiv {
+            font-size: 0.8em;
+            color: var(--yellow);
+            margin-top: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .key-badge {
+            display: inline-block;
+            background: var(--bg-primary);
+            color: var(--green);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid var(--border);
+        }
+
+        .key-badge.alt {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-color.ctrl {
+            background: var(--green);
+        }
+
+        .legend-color.alt {
+            background: var(--accent);
+        }
+
+        .legend-color.shift {
+            background: var(--yellow);
+        }
+
+        .legend-color.ctrl-alt {
+            background: linear-gradient(45deg, var(--green), var(--accent));
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .binding-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Tmux Bindings</h1>
+            <p class="subtitle">Vim-style keybindings for tmux</p>
+        </header>
+
+        <input type="text" class="search-box" placeholder="🔍 Search bindings..." id="search">
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color ctrl"></div>
+                <span>Ctrl key</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color alt"></div>
+                <span>Alt key</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color shift"></div>
+                <span>Shift key</span>
+            </div>
+        </div>
+
+        <!-- Prefix Key -->
+        <div class="section" data-category="prefix">
+            <div class="section-header">
+                <span class="section-icon">🔑</span>
+                <h2 class="section-title">Prefix Key</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card highlight">
+                    <span class="key">Ctrl + a</span>
+                    <div class="action">Prefix Key</div>
+                    <div class="vim-equiv">Like GNU screen</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pane Navigation -->
+        <div class="section" data-category="navigation">
+            <div class="section-header">
+                <span class="section-icon">🧭</span>
+                <h2 class="section-title">Pane Navigation</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">h</span>
+                    <div class="action">Left</div>
+                    <div class="vim-equiv">vim: &lt;C-w&gt; h</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">j</span>
+                    <div class="action">Down</div>
+                    <div class="vim-equiv">vim: &lt;C-w&gt; j</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">k</span>
+                    <div class="action">Up</div>
+                    <div class="vim-equiv">vim: &lt;C-w&gt; k</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">l</span>
+                    <div class="action">Right</div>
+                    <div class="vim-equiv">vim: &lt;C-w&gt; l</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Tab</span>
+                    <div class="action">Next Pane</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Shift + Tab</span>
+                    <div class="action">Prev Pane</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Window Navigation -->
+        <div class="section" data-category="navigation">
+            <div class="section-header">
+                <span class="section-icon">🪟</span>
+                <h2 class="section-title">Window Navigation</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card highlight">
+                    <span class="key alt">Alt + h</span>
+                    <div class="action">Previous Window</div>
+                </div>
+                <div class="binding-card highlight">
+                    <span class="key alt">Alt + l</span>
+                    <div class="action">Next Window</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">w</span>
+                    <div class="action">Choose Window</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resize Panes -->
+        <div class="section" data-category="resize">
+            <div class="section-header">
+                <span class="section-icon">📐</span>
+                <h2 class="section-title">Resize Panes</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">Ctrl + h</span>
+                    <div class="action">Resize Left (5)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Ctrl + j</span>
+                    <div class="action">Resize Down (5)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Ctrl + k</span>
+                    <div class="action">Resize Up (5)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Ctrl + l</span>
+                    <div class="action">Resize Right (5)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Shift + h</span>
+                    <div class="action">Fine Left (1)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Shift + j</span>
+                    <div class="action">Fine Down (1)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Shift + k</span>
+                    <div class="action">Fine Up (1)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Shift + l</span>
+                    <div class="action">Fine Right (1)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Split Windows -->
+        <div class="section" data-category="split">
+            <div class="section-header">
+                <span class="section-icon">✂️</span>
+                <h2 class="section-title">Split Windows</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">v</span>
+                    <div class="action">Vertical Split</div>
+                    <div class="vim-equiv">vim: :vsplit</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">s</span>
+                    <div class="action">Horizontal Split</div>
+                    <div class="vim-equiv">vim: :split</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Window Management -->
+        <div class="section" data-category="window">
+            <div class="section-header">
+                <span class="section-icon">📋</span>
+                <h2 class="section-title">Window Management</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">Ctrl + n</span>
+                    <div class="action">New Window</div>
+                    <div class="vim-equiv">vim: :new</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">:</span>
+                    <div class="action">Command Prompt</div>
+                    <div class="vim-equiv">vim: :</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">r</span>
+                    <div class="action">Rename Window (prompt)</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Alt + w</span>
+                    <div class="action">Move Window</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">x</span>
+                    <div class="action">Kill Pane</div>
+                    <div class="vim-equiv">vim: :close</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">W</span>
+                    <div class="action">Kill Window</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copy Mode -->
+        <div class="section" data-category="copy">
+            <div class="section-header">
+                <span class="section-icon">📋</span>
+                <h2 class="section-title">Copy Mode</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">v</span>
+                    <div class="action">Visual Selection</div>
+                    <div class="vim-equiv">In copy mode</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">y</span>
+                    <div class="action">Yank/Copy</div>
+                    <div class="vim-equiv">In copy mode</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">/</span>
+                    <div class="action">Copy Mode + Search</div>
+                    <div class="vim-equiv">vim: /</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Management -->
+        <div class="section" data-category="session">
+            <div class="section-header">
+                <span class="section-icon">📁</span>
+                <h2 class="section-title">Session Management</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card">
+                    <span class="key">s</span>
+                    <div class="action">List Sessions</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">S</span>
+                    <div class="action">Rename Session (prompt)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exit -->
+        <div class="section" data-category="exit">
+            <div class="section-header">
+                <span class="section-icon">🚪</span>
+                <h2 class="section-title">Exit</h2>
+            </div>
+            <div class="binding-grid">
+                <div class="binding-card highlight">
+                    <span class="key">q</span>
+                    <div class="action">Kill Server</div>
+                    <div class="vim-equiv">vim: :q</div>
+                </div>
+                <div class="binding-card">
+                    <span class="key">Y</span>
+                    <div class="action">Synchronize Panes</div>
+                    <div class="vim-equiv">Toggle on/off</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Reference Table -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-icon">📊</span>
+                <h2 class="section-title">Complete Reference</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Binding</th>
+                            <th>Action</th>
+                            <th>Vim Equivalent</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reference-table">
+                        <tr><td><span class="key-badge">Ctrl+a</span></td><td>Prefix Key</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">h</span></td><td>Navigate Left</td><td>&lt;C-w&gt; h</td></tr>
+                        <tr><td><span class="key-badge">j</span></td><td>Navigate Down</td><td>&lt;C-w&gt; j</td></tr>
+                        <tr><td><span class="key-badge">k</span></td><td>Navigate Up</td><td>&lt;C-w&gt; k</td></tr>
+                        <tr><td><span class="key-badge">l</span></td><td>Navigate Right</td><td>&lt;C-w&gt; l</td></tr>
+                        <tr><td><span class="key-badge alt">Alt+h</span></td><td>Previous Window</td><td>—</td></tr>
+                        <tr><td><span class="key-badge alt">Alt+l</span></td><td>Next Window</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">w</span></td><td>Choose Window</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Ctrl+h</span></td><td>Resize Left (5)</td><td>&lt;C-w&gt; &lt;</td></tr>
+                        <tr><td><span class="key-badge">Ctrl+j</span></td><td>Resize Down (5)</td><td>&lt;C-w&gt; -</td></tr>
+                        <tr><td><span class="key-badge">Ctrl+k</span></td><td>Resize Up (5)</td><td>&lt;C-w&gt; +</td></tr>
+                        <tr><td><span class="key-badge">Ctrl+l</span></td><td>Resize Right (5)</td><td>&lt;C-w&gt; &gt;</td></tr>
+                        <tr><td><span class="key-badge">Shift+h</span></td><td>Resize Left (1)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Shift+j</span></td><td>Resize Down (1)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Shift+k</span></td><td>Resize Up (1)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Shift+l</span></td><td>Resize Right (1)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">v</span></td><td>Vertical Split</td><td>:vsplit</td></tr>
+                        <tr><td><span class="key-badge">s</span></td><td>Horizontal Split</td><td>:split</td></tr>
+                        <tr><td><span class="key-badge">Ctrl+n</span></td><td>New Window</td><td>:new</td></tr>
+                        <tr><td><span class="key-badge">:</span></td><td>Command Prompt</td><td>:</td></tr>
+                        <tr><td><span class="key-badge">r</span></td><td>Rename Window (prompt)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge alt">Alt+w</span></td><td>Move Window</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">x</span></td><td>Kill Pane</td><td>:close</td></tr>
+                        <tr><td><span class="key-badge">W</span></td><td>Kill Window</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Tab</span></td><td>Next Pane</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Shift+Tab</span></td><td>Prev Pane</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">/</span></td><td>Copy Mode + Search</td><td>/</td></tr>
+                        <tr><td><span class="key-badge">S</span></td><td>Rename Session (prompt)</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">Y</span></td><td>Synchronize Panes</td><td>—</td></tr>
+                        <tr><td><span class="key-badge">q</span></td><td>Kill Server</td><td>:q</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <p>📝 Config file: ~/.tmux.conf | 📂 Stored in: ~/.tmux/bindings.html</p>
+            <p>Reload tmux: <code>tmux source-file ~/.tmux.conf</code></p>
+        </footer>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('search').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.binding-card');
+            const tableRows = document.querySelectorAll('#reference-table tr');
+
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? 'table-row' : 'none';
+            });
+        });
+
+        // Click to copy binding
+        document.querySelectorAll('.binding-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const key = this.querySelector('.key').textContent;
+                const action = this.querySelector('.action').textContent;
+                
+                // Flash effect
+                this.style.background = 'var(--accent)';
+                this.querySelector('.key').style.color = 'var(--bg-primary)';
+                
+                setTimeout(() => {
+                    this.style.background = '';
+                    this.querySelector('.key').style.color = '';
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
