@@ -1,24 +1,28 @@
-# tmux-bindings
+# tmux-bindings-vim
 
-Vim-style tmux configuration and an interactive HTML keybinding reference.
+A simple, opinionated set of vim-style keybindings for tmux to get you started. If you're a vim user tired of the default tmux bindings, drop this in and feel right at home.
+
+## 🔗 Interactive Reference
+
+Browse all bindings in your browser: **[keybinding reference](https://p-dealwis.github.io/tmux-bindings-vim/bindings.html)**
 
 ## Files
 
-- **`bindings.html`** — Interactive, searchable keybinding reference (open in a browser)
+- **`bindings.html`** — Interactive, searchable keybinding reference
 - **`~/.tmux.conf`** — The tmux config these bindings are derived from
 
 ## Quick Start
 
 ```bash
-# Copy the config
+# Back up your existing config
 cp ~/.tmux.conf ~/.tmux.conf.bak
+
+# Clone and link
+git clone https://github.com/p-dealwis/tmux-bindings-vim.git ~/.tmux
 ln -sf ~/.tmux/tmux.conf ~/.tmux.conf
 
 # Reload tmux
 tmux source-file ~/.tmux.conf
-
-# View bindings reference
-open ~/.tmux/bindings.html
 ```
 
 ## Prefix Key
